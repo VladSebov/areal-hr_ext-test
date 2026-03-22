@@ -25,6 +25,8 @@ areal-hr_ext-test/
 
 ## Схема базы данных
 
+![Схема базы данных](docs/misc/database_scheme.jpg)
+
 ## Используемый инструментарий
 ### Операционная система
 - **Fedora Linux 42** (Workstation Edition)
