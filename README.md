@@ -37,6 +37,9 @@ areal-hr_ext-test/
 ### СУБД
 - **PostgreSQL 17** — развернута в **Docker** контейнере
 
+### Object Storage
+- **MinIO**
+
 ### Контейнеризация
 - **Docker** и **Docker Compose** — для запуска контейнеров с приложением, API и СУБД
 
