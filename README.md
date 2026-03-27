@@ -25,7 +25,8 @@ areal-hr_ext-test/
 
 ## Схема базы данных
 
-![Схема базы данных](docs/misc/database_scheme.jpg)
+![Схема базы данных 1](docs/misc/database_scheme_1.png)
+![Схема базы данных 2](docs/misc/database_scheme_2.png)
 
 ## Используемый инструментарий
 ### Операционная система
