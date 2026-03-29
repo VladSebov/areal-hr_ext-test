@@ -1,0 +1,5 @@
+app/.quasar
+.env
+app/node_modules
+api/node_modules
+.git

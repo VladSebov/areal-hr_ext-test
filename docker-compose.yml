@@ -1,0 +1,8 @@
+services:
+  vue_app:
+    container_name: vue_app_container
+    build:
+      context: .
+      dockerfile: containers/app/Dockerfile
+    ports:
+      - "${HOST_PORT}:${VUE_APP_PORT}"
