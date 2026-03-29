@@ -18,4 +18,17 @@ export class OrganizationsService {
     findAll() {
         return this.repo.find();
     }
+
+    async findOne(id: number) {
+        return await this.repo.findOneBy({ id });
+    }
+
+    async update(id: number, data: { name?: string; comment?: string }) {
+        await this.repo.update(id, data);
+        return this.findOne(id);
+    }
+
+    async softRemove(id: number) {
+        return await this.repo.softDelete(id);
+    }
 }
