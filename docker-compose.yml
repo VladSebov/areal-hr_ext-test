@@ -6,3 +6,17 @@ services:
       dockerfile: containers/app/Dockerfile
     ports:
       - "${HOST_PORT}:${VUE_APP_PORT}"
+    depends_on:
+      - nest_api
+  nest_api:
+    container_name: nest_api_container
+    build:
+      context: .
+      dockerfile: containers/api/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./api:/app
+      - /app/node_modules
