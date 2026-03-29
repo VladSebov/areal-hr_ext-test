@@ -5,6 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { Organization } from './organizations/entities/organization.entity';
+import { DepartmentsModule } from './departments/departments.module';
+import {Department} from "./departments/entities/department.entity";
+import { PositionsModule } from './positions/positions.module';
+import {Position} from "./positions/entities/position.entity";
 
 @Module({
   imports: [
@@ -20,7 +24,7 @@ import { Organization } from './organizations/entities/organization.entity';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Organization],
+        entities: [Organization, Department, Position],
 
         //don't forget to use migrations in production
         synchronize: true,
@@ -29,6 +33,10 @@ import { Organization } from './organizations/entities/organization.entity';
     }),
 
     OrganizationsModule,
+
+    DepartmentsModule,
+
+    PositionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

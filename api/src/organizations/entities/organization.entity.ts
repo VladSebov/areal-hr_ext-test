@@ -4,8 +4,9 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    DeleteDateColumn
+    DeleteDateColumn, OneToMany
 } from 'typeorm';
+import {Department} from "../../departments/entities/department.entity";
 
 @Entity('organizations')
 export class Organization {
@@ -17,6 +18,9 @@ export class Organization {
 
     @Column({ type: 'text', nullable: true })
     comment: string;
+
+    @OneToMany(() => Department, (dept) => dept.organization)
+    departments: Department[];
 
     @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;
