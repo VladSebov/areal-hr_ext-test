@@ -3,16 +3,20 @@ services:
     container_name: vue_app_container
     build:
       context: .
-      dockerfile: containers/app/Dockerfile
+      dockerfile: containers/app/Dockerfile.dev
     ports:
-      - "${HOST_PORT}:${VUE_APP_PORT}"
+      #- "${HOST_PORT}:${VUE_APP_PORT}"
+      - "9000:9000"
+    volumes:
+      - ./app:/app
+      - /app/node_modules
     depends_on:
       - nest_api
   nest_api:
     container_name: nest_api_container
     build:
       context: .
-      dockerfile: containers/api/Dockerfile
+      dockerfile: containers/api/Dockerfile.dev
     ports:
       - "${NEST_API_PORT}:${NEST_API_PORT}"
     env_file:
