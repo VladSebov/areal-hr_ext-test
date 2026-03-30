@@ -1,8 +1,8 @@
 <template>
   <q-page padding>
     <div class="row items-center justify-between q-mb-md">
-      <div class="text-h5 text-weight-bold">Organizations</div>
-      <q-btn color="primary" icon="add" label="New Organization" @click="openDialog()" />
+      <div class="text-h5 text-weight-bold">Организации</div>
+      <q-btn color="primary" icon="add" label="Новая организация" @click="openDialog()" />
     </div>
 
     <q-table
@@ -30,13 +30,13 @@
         </q-card-section>
 
         <q-card-section class="q-gutter-y-md">
-          <q-input v-model="form.name" label="Organization Name *" outlined dense />
-          <q-input v-model="form.comment" label="Comment" type="textarea" outlined dense />
+          <q-input v-model="form.name" label="Название организации *" outlined dense />
+          <q-input v-model="form.comment" label="Комментарий" type="textarea" outlined dense />
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn unelevated label="Save" color="primary" @click="save" :loading="saving" />
+          <q-btn flat label="Отмена" color="primary" v-close-popup />
+          <q-btn unelevated label="Сохранить" color="primary" @click="save" :loading="saving" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -67,10 +67,10 @@ const form = reactive({
 });
 
 const columns: QTableColumn[] = [
-  { name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true },
-  { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
-  { name: 'comment', label: 'Comment', field: 'comment', align: 'left' },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+  { name: 'id', label: '№', field: 'id', align: 'left', sortable: true },
+  { name: 'name', label: 'Название', field: 'name', align: 'left', sortable: true },
+  { name: 'comment', label: 'Комментарий', field: 'comment', align: 'left' },
+  { name: 'actions', label: 'Действия', field: 'actions', align: 'right' }
 ];
 
 const loadData = async () => {
@@ -79,7 +79,7 @@ const loadData = async () => {
     const { data } = await api.get('/organizations');
     rows.value = data;
   } catch {
-    $q.notify({ color: 'negative', message: 'Failed to load data' });
+    $q.notify({ color: 'negative', message: 'Не удалось загрузить данные' });
   } finally {
     loading.value = false;
   }
@@ -111,9 +111,9 @@ const save = async () => {
     }
     dialog.show = false;
     await loadData();
-    $q.notify({ color: 'positive', message: 'Success' });
+    $q.notify({ color: 'positive', message: 'Успешно сохранено' });
   } catch {
-    $q.notify({ color: 'negative', message: 'Error saving' });
+    $q.notify({ color: 'negative', message: 'Ошибка сохранения' });
   } finally {
     saving.value = false;
   }
@@ -121,8 +121,8 @@ const save = async () => {
 
 const confirmDelete = (id: number) => {
   $q.dialog({
-    title: 'Confirm',
-    message: 'Delete this organization?',
+    title: 'Подтверждение удаления',
+    message: 'Действительно хотите удалить эту запись?',
     cancel: true,
     persistent: true
   }).onOk(() => {
@@ -130,9 +130,9 @@ const confirmDelete = (id: number) => {
       try {
         await api.delete(`/organizations/${id}`);
         await loadData();
-        $q.notify({ color: 'positive', message: 'Deleted' });
+        $q.notify({ color: 'positive', message: 'Запись удалена' });
       } catch {
-        $q.notify({ color: 'negative', message: 'Error deleting' });
+        $q.notify({ color: 'negative', message: 'Ошибка удаления' });
       }
     })();
   });
