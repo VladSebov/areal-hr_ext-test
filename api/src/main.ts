@@ -8,7 +8,12 @@ async function bootstrap() {
 
   const port = configService.get<number>('NEST_API_PORT') || 3000;
 
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  app.enableCors({
+    origin: 'http://localhost:9000',
+
+  });
+
+  await app.listen(3000, '0.0.0.0');
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
