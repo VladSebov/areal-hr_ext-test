@@ -5,6 +5,7 @@ WORKDIR /app
 RUN npm install -g @quasar/cli
 
 COPY app/package*.json ./
+COPY app/ .
 
 RUN npm install
 
