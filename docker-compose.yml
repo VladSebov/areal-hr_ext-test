@@ -5,8 +5,7 @@ services:
       context: .
       dockerfile: containers/app/Dockerfile.dev
     ports:
-      #- "${HOST_PORT}:${VUE_APP_PORT}"
-      - "9000:9000"
+      - "${VUE_APP_PORT}:${VUE_APP_PORT}"
     volumes:
       - ./app:/app
       - /app/node_modules
@@ -34,7 +33,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

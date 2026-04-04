@@ -7,13 +7,14 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const port = configService.get<number>('NEST_API_PORT') || 3000;
+  const vueAppPort = configService.get<number>('VUE_APP_PORT') || 9000;
 
   app.enableCors({
-    origin: 'http://localhost:9000',
-
+    origin: `http://localhost:${vueAppPort}`,
+    credentials: true,
   });
 
-  await app.listen(3000, '0.0.0.0');
+  await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
