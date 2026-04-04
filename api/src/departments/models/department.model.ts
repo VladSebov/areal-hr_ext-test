@@ -8,7 +8,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
 } from 'typeorm';
-import { Organization } from '../../organizations/entities/organization.entity';
+import { Organization } from '../../organizations/models/organization.model';
 
 @Entity('departments')
 export class Department {

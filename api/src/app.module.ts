@@ -4,11 +4,11 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OrganizationsModule } from './organizations/organizations.module';
-import { Organization } from './organizations/entities/organization.entity';
+import { Organization } from './organizations/models/organization.model';
 import { DepartmentsModule } from './departments/departments.module';
-import {Department} from "./departments/entities/department.entity";
+import {Department} from "./departments/models/department.model";
 import { PositionsModule } from './positions/positions.module';
-import {Position} from "./positions/entities/position.entity";
+import {Position} from "./positions/models/position.model";
 
 @Module({
   imports: [
