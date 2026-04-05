@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Employee } from './models/employee.model';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {
-  create(createEmployeeDto: CreateEmployeeDto) {
-    return 'This action adds a new employee';
+  constructor(
+      @InjectRepository(Employee)
+      private readonly repo: Repository<Employee>,
+  ) {}
+
+  async create(createDto: CreateEmployeeDto) {
+    const employee = this.repo.create(createDto);
+    return await this.repo.save(employee);
   }
 
-  findAll() {
-    return `This action returns all employees`;
+  async findAll() {
+    return await this.repo.find({
+      order: { lastName: 'ASC', firstName: 'ASC' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} employee`;
+  async findOne(id: number) {
+    const employee = await this.repo.findOne({
+      where: { id },
+      relations: ['operations', 'users'],
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+
+    return employee;
   }
 
-  update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
-    return `This action updates a #${id} employee`;
+  async update(id: number, updateDto: UpdateEmployeeDto) {
+    const employee = await this.findOne(id);
+
+    this.repo.merge(employee, updateDto);
+    return await this.repo.save(employee);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} employee`;
+  async remove(id: number) {
+    const result = await this.repo.softDelete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+
+    return { message: `Employee #${id} successfully soft-deleted` };
   }
 }

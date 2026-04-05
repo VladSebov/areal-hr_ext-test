@@ -16,6 +16,12 @@ import { HrOperationsModule } from './hr_operations/hr_operations.module';
 import { PassportScansModule } from './passport_scans/passport_scans.module';
 import { FilesModule } from './files/files.module';
 import { OperationsHistoryModule } from './operations_history/operations_history.module';
+import { UsersModule } from './users/users.module';
+import { RolesModule } from './roles/roles.module';
+import {Employee} from "./employees/models/employee.model";
+import {Role} from "./roles/models/role.model";
+import {User} from "./users/models/user.model";
+import {HrOperation} from "./hr_operations/models/hr_operation.model";
 
 @Module({
   imports: [
@@ -32,13 +38,14 @@ import { OperationsHistoryModule } from './operations_history/operations_history
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
+        type: 'postgres' as const,
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Organization, Department, Position],
+        entities: [Organization, Department, Position, Role, User, HrOperation, Employee],
+        autoLoadEntities: true,
 
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: true,
@@ -54,6 +61,8 @@ import { OperationsHistoryModule } from './operations_history/operations_history
       PassportScansModule,
       FilesModule,
       OperationsHistoryModule,
+      UsersModule,
+      RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
