@@ -13,5 +13,6 @@ COPY api/package*.json ./
 RUN npm install --only=production
 COPY --from=build-stage /app/dist ./dist
 
-EXPOSE 3000
+ENV PORT=3000
+EXPOSE ${PORT}
 CMD ["node", "dist/main"]

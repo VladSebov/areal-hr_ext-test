@@ -6,6 +6,8 @@ services:
       dockerfile: containers/app/Dockerfile.dev
     ports:
       - "${VUE_APP_PORT}:${VUE_APP_PORT}"
+    environment:
+      - "PORT=${VUE_APP_PORT}"
     volumes:
       - ./app:/app
       - /app/node_modules
@@ -16,6 +18,9 @@ services:
     build:
       context: .
       dockerfile: containers/api/Dockerfile.dev
+    environment:
+      - "PORT=${NEST_API_PORT}"
+      - "NODE_ENV=${NODE_ENV}"
     ports:
       - "${NEST_API_PORT}:${NEST_API_PORT}"
     env_file:
