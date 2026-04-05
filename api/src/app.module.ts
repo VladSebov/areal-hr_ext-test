@@ -11,6 +11,11 @@ import { PositionsModule } from './positions/positions.module';
 import { Position } from './positions/models/position.model';
 import { envValidationSchema } from './config/env.validation';
 import { MinioModule } from "./minio/minio.module";
+import { EmployeesModule } from './employees/employees.module';
+import { HrOperationsModule } from './hr_operations/hr_operations.module';
+import { PassportScansModule } from './passport_scans/passport_scans.module';
+import { FilesModule } from './files/files.module';
+import { OperationsHistoryModule } from './operations_history/operations_history.module';
 
 @Module({
   imports: [
@@ -44,6 +49,11 @@ import { MinioModule } from "./minio/minio.module";
       DepartmentsModule,
       PositionsModule,
       MinioModule,
+      EmployeesModule,
+      HrOperationsModule,
+      PassportScansModule,
+      FilesModule,
+      OperationsHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
