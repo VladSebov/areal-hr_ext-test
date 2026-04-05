@@ -30,8 +30,9 @@ export class PositionsService {
   }
 
   async update(id: number, updateDto: UpdatePositionDto) {
-    await this.repo.update(id, updateDto);
-    return this.findOne(id);
+    const position = await this.findOne(id);
+    const updatedPosition = this.repo.merge(position, updateDto);
+    return await this.repo.save(updatedPosition);
   }
 
   async remove(id: number) {

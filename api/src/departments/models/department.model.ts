@@ -15,7 +15,7 @@ export class Department {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255, nullable: false })
     name: string;
 
     @Column({ type: 'text', nullable: true })

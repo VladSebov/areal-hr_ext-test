@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
 
-export class CreatePositionDto {
+export class CreateOrganizationDto {
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
@@ -9,6 +9,6 @@ export class CreatePositionDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(500)
+    @MaxLength(1000)
     comment?: string;
 }

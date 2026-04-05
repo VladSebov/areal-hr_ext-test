@@ -1,14 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
+import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
     constructor(private readonly service: OrganizationsService) {}
 
     @Post()
-    create(@Body() data: { name: string; comment?: string }) {
-        console.log('POST request received!', data);
-        return this.service.create(data.name, data.comment);
+    create(@Body() dto: CreateOrganizationDto) {
+        return this.service.create(dto);
     }
 
     @Get()
@@ -17,20 +18,20 @@ export class OrganizationsController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.service.findOne(+id);
+    findOne(@Param('id', ParseIntPipe) id: number) {
+        return this.service.findOne(id);
     }
 
     @Patch(':id')
     update(
-        @Param('id') id: string,
-        @Body() updateData: { name?: string; comment?: string }
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateOrganizationDto,
     ) {
-        return this.service.update(+id, updateData);
+        return this.service.update(id, dto);
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.service.softRemove(+id);
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.service.softRemove(id);
     }
 }
