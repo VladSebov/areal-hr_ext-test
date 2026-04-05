@@ -86,6 +86,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import type { QTableColumn } from 'quasar';
 import { api } from 'boot/axios';
+import axios from 'axios';
 
 interface Organization {
   id: number;
@@ -154,7 +155,6 @@ const openDialog = (row?: Department) => {
     form.comment = row.comment || '';
     form.organizationId = row.organization?.id || null;
     form.parentId = row.parent?.id || null;
-
     deptOptions.value = rows.value.filter(d => d.id !== row.id);
   } else {
     dialog.isEdit = false;
@@ -169,14 +169,18 @@ const openDialog = (row?: Department) => {
 };
 
 const save = async () => {
-  if (!form.name || !form.organizationId) return;
+  if (!form.name || !form.organizationId) {
+    $q.notify({ color: 'warning', message: 'Заполните обязательные поля' });
+    return;
+  }
+
   saving.value = true;
   try {
     const payload = {
       name: form.name,
-      comment: form.comment,
-      organization: { id: form.organizationId },
-      parent: form.parentId ? { id: form.parentId } : null
+      comment: form.comment || '',
+      organizationId: form.organizationId,
+      parentId: form.parentId || null
     };
 
     if (dialog.isEdit && dialog.activeId) {
@@ -184,11 +188,25 @@ const save = async () => {
     } else {
       await api.post('/departments', payload);
     }
+
     dialog.show = false;
     await loadData();
     $q.notify({ color: 'positive', message: 'Успешно сохранено' });
-  } catch {
-    $q.notify({ color: 'negative', message: 'Ошибка сохранения' });
+  } catch (error: unknown) {
+    let detail = 'Ошибка сохранения';
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message;
+      detail = Array.isArray(errorMessage) 
+        ? errorMessage.join(', ') 
+        : (errorMessage || error.message);
+    } else if (error instanceof Error) {
+      detail = error.message;
+    }
+
+    $q.notify({
+      color: 'negative',
+      message: detail || 'Ошибка сохранения'
+    });
   } finally {
     saving.value = false;
   }

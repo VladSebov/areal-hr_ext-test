@@ -49,20 +49,18 @@ export class DepartmentsService {
   }
 
   async update(id: number, updateDto: UpdateDepartmentDto) {
-    const updateData: any = { ...updateDto };
+    const department = await this.findOne(id);
 
-    if (updateDto.organizationId) {
-      updateData.organization = { id: updateDto.organizationId };
-      delete updateData.organizationId;
-    }
+    const updateData = {
+      ...updateDto,
+      organization: updateDto.organizationId ? { id: updateDto.organizationId } : department.organization,
+      parent: updateDto.parentId !== undefined
+        ? (updateDto.parentId ? { id: updateDto.parentId } : null)
+        : department.parent,
+    };
 
-    if (updateDto.parentId) {
-      updateData.parent = { id: updateDto.parentId };
-      delete updateData.parentId;
-    }
-
-    await this.repo.update(id, updateData);
-    return this.findOne(id);
+    this.repo.merge(department, updateData as any);
+    return await this.repo.save(department);
   }
 
   async remove(id: number) {
