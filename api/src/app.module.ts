@@ -6,13 +6,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { Organization } from './organizations/models/organization.model';
 import { DepartmentsModule } from './departments/departments.module';
-import {Department} from "./departments/models/department.model";
+import { Department } from './departments/models/department.model';
 import { PositionsModule } from './positions/positions.module';
-import {Position} from "./positions/models/position.model";
+import { Position } from './positions/models/position.model';
+import { envValidationSchema } from './config/env.validation';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: envValidationSchema,
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+    }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -26,16 +34,13 @@ import {Position} from "./positions/models/position.model";
         database: configService.get<string>('DB_DATABASE'),
         entities: [Organization, Department, Position],
 
-        //don't forget to use migrations in production
-        synchronize: true,
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: true,
       }),
     }),
 
     OrganizationsModule,
-
     DepartmentsModule,
-
     PositionsModule,
   ],
   controllers: [AppController],
