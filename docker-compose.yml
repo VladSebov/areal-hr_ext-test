@@ -27,6 +27,7 @@ services:
       - .env
     depends_on:
       - postgres
+      - minio
     volumes:
       - ./api:/app
       - /app/node_modules
@@ -41,6 +42,19 @@ services:
       - "${DB_PORT}:${DB_PORT}"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
+  minio:
+    image: elestio/minio
+    container_name: minio_storage
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
 volumes:
   pgdata:
+  miniodata:

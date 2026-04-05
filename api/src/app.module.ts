@@ -10,6 +10,7 @@ import { Department } from './departments/models/department.model';
 import { PositionsModule } from './positions/positions.module';
 import { Position } from './positions/models/position.model';
 import { envValidationSchema } from './config/env.validation';
+import { MinioModule } from "./minio/minio.module";
 
 @Module({
   imports: [
@@ -39,9 +40,10 @@ import { envValidationSchema } from './config/env.validation';
       }),
     }),
 
-    OrganizationsModule,
-    DepartmentsModule,
-    PositionsModule,
+      OrganizationsModule,
+      DepartmentsModule,
+      PositionsModule,
+      MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService],
