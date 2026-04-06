@@ -33,6 +33,7 @@ const linksList = [
   { title: 'Организации', icon: 'business', link: '/#/organizations' },
   { title: 'Отделы', icon: 'account_tree', link: '/#/departments' },
   { title: 'Должности', icon: 'badge', link: '/#/positions' },
+  { title: 'Сотрудники', icon: 'people', link: '/#/employees' },
 ];
 
 const $q = useQuasar();
