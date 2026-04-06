@@ -31,8 +31,8 @@ import EssentialLink from 'components/EssentialLink.vue';
 
 const linksList = [
   { title: 'Организации', icon: 'business', link: '/#/organizations' },
-  { title: 'Отделы', icon: 'account_tree', link: '/#//departments' },
-  { title: 'Должности', icon: 'badge', link: '/#//positions' },
+  { title: 'Отделы', icon: 'account_tree', link: '/#/departments' },
+  { title: 'Должности', icon: 'badge', link: '/#/positions' },
 ];
 
 const $q = useQuasar();
