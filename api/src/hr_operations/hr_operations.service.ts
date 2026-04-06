@@ -57,12 +57,10 @@ export class HrOperationsService {
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
+    const operation = await this.findOne(id);
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`HR Operation with ID ${id} not found`);
-    }
+    await this.repo.softRemove(operation);
 
-    return { message: `HR Operation #${id} successfully soft-deleted` };
+    return { message: `HR Operation #${id} successfully soft-removed` };
   }
 }

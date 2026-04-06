@@ -36,8 +36,8 @@ export class PositionsService {
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-    if (result.affected === 0) throw new NotFoundException(`Position #${id} not found`);
+    const position = await this.findOne(id);
+    await this.repo.softRemove(position);
     return { message: `Position #${id} soft-deleted` };
   }
 }

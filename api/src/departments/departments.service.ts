@@ -64,12 +64,8 @@ export class DepartmentsService {
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Department with ID ${id} not found`);
-    }
-
+    const department = await this.findOne(id);
+    await this.repo.softRemove(department);
     return { message: `Department #${id} successfully soft-deleted` };
   }
 }

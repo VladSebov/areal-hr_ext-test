@@ -38,8 +38,8 @@ export class OrganizationsService {
     }
 
     async softRemove(id: number) {
-        const result = await this.repo.softDelete(id);
-        if (result.affected === 0) throw new NotFoundException(`Organization #${id} not found`);
+        const organization = await this.findOne(id);
+        await this.repo.softRemove(organization);
         return { message: `Organization #${id} soft-deleted` };
     }
 }

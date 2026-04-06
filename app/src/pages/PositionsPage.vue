@@ -151,7 +151,7 @@ const confirmDelete = (id: number) => {
   }).onOk(() => {
     void (async () => {
       try {
-        await api.delete(`/organizations/${id}`);
+        await api.delete(`/positions/${id}`);
         await loadData();
         $q.notify({ color: 'positive', message: 'Запись удалена' });
       } catch {

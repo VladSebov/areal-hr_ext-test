@@ -48,12 +48,8 @@ export class PassportScansService {
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Passport scan with ID ${id} not found`);
-    }
-
+    const passportScan = await this.findOne(id);
+    await this.repo.softRemove(passportScan);
     return { message: `Passport scan #${id} successfully soft-deleted` };
   }
 }

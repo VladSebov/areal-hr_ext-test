@@ -49,11 +49,7 @@ export class FilesService {
 
   async remove(id: number) {
     const file = await this.findOne(id);
-    const result = await this.repo.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`File with ID ${id} not found`);
-    }
+    await this.repo.softRemove(file);
 
     return { message: `File #${id} successfully soft-deleted` };
   }

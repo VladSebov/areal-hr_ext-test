@@ -45,12 +45,8 @@ export class EmployeesService {
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
-    }
-
+    const employee = await this.findOne(id);
+    await this.repo.softRemove(employee);
     return { message: `Employee #${id} successfully soft-deleted` };
   }
 }
