@@ -31,8 +31,12 @@ import EssentialLink from 'components/EssentialLink.vue';
 
 const linksList = [
   { title: 'Организации', icon: 'business', link: '/#/organizations' },
-  { title: 'Отделы', icon: 'account_tree', link: '/#//departments' },
-  { title: 'Должности', icon: 'badge', link: '/#//positions' },
+  { title: 'Отделы', icon: 'account_tree', link: '/#/departments' },
+  { title: 'Должности', icon: 'badge', link: '/#/positions' },
+  { title: 'Сотрудники', icon: 'people', link: '/#/employees' },
+  { title: 'Файлы', icon: 'folder_shared', link: '/#/files' },
+  { title: 'Кадровые операции', icon: 'sync_alt', link: '/#/hr-operations' },
+  { title: 'История изменений', icon: 'history', link: '/#/operations-history' },
 ];
 
 const $q = useQuasar();

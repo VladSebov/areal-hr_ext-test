@@ -3,3 +3,5 @@ pgdata/
 postgres-data/
 *.db
 *.sqlite
+.env
+*.vscode

@@ -9,6 +9,8 @@ COPY app/ .
 
 RUN npm install
 
-EXPOSE 9000
+ENV PORT=8080
 
-CMD ["quasar", "dev", "-m", "spa", "--hostname", "0.0.0.0"]
+EXPOSE ${PORT}
+
+CMD ["sh", "-c", "quasar dev -m spa --port ${PORT} --address 0.0.0.0"]

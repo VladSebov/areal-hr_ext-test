@@ -6,7 +6,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn, OneToMany
 } from 'typeorm';
-import {Department} from "../../departments/entities/department.entity";
+import {Department} from "../../departments/models/department.model";
 
 @Entity('organizations')
 export class Organization {

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Organization } from './entities/organization.entity';
+import { Organization } from './models/organization.model';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
+import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -10,25 +12,34 @@ export class OrganizationsService {
         private readonly repo: Repository<Organization>,
     ) {}
 
-    async create(name: string, comment?: string) {
-        const org = this.repo.create({ name, comment });
-        return this.repo.save(org);
+    async create(dto: CreateOrganizationDto) {
+        const organization = this.repo.create(dto);
+        return await this.repo.save(organization);
     }
 
-    findAll() {
-        return this.repo.find();
+    async findAll() {
+        return await this.repo.find({
+            order: { id: 'ASC' },
+        });
     }
 
     async findOne(id: number) {
-        return await this.repo.findOneBy({ id });
+        const organization = await this.repo.findOneBy({ id });
+        if (!organization) {
+            throw new NotFoundException(`Organization ${id} not found`);
+        }
+        return organization;
     }
 
-    async update(id: number, data: { name?: string; comment?: string }) {
-        await this.repo.update(id, data);
-        return this.findOne(id);
+    async update(id: number, updateDto: UpdateOrganizationDto) {
+        const organization = await this.findOne(id);
+        const updatedOrganization = this.repo.merge(organization, updateDto);
+        return await this.repo.save(updatedOrganization);
     }
 
     async softRemove(id: number) {
-        return await this.repo.softDelete(id);
+        const organization = await this.findOne(id);
+        await this.repo.softRemove(organization);
+        return { message: `Organization #${id} soft-deleted` };
     }
 }

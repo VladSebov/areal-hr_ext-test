@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PositionsService } from './positions.service';
 import { PositionsController } from './positions.controller';
-import { Position } from './entities/position.entity';
+import { Position } from './models/position.model';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Position])],

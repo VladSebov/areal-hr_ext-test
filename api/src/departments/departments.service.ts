@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Department } from './entities/department.entity';
+import { Department } from './models/department.model';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
@@ -49,29 +49,23 @@ export class DepartmentsService {
   }
 
   async update(id: number, updateDto: UpdateDepartmentDto) {
-    const updateData: any = { ...updateDto };
+    const department = await this.findOne(id);
 
-    if (updateDto.organizationId) {
-      updateData.organization = { id: updateDto.organizationId };
-      delete updateData.organizationId;
-    }
+    const updateData = {
+      ...updateDto,
+      organization: updateDto.organizationId ? { id: updateDto.organizationId } : department.organization,
+      parent: updateDto.parentId !== undefined
+        ? (updateDto.parentId ? { id: updateDto.parentId } : null)
+        : department.parent,
+    };
 
-    if (updateDto.parentId) {
-      updateData.parent = { id: updateDto.parentId };
-      delete updateData.parentId;
-    }
-
-    await this.repo.update(id, updateData);
-    return this.findOne(id);
+    this.repo.merge(department, updateData as any);
+    return await this.repo.save(department);
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Department with ID ${id} not found`);
-    }
-
+    const department = await this.findOne(id);
+    await this.repo.softRemove(department);
     return { message: `Department #${id} successfully soft-deleted` };
   }
 }

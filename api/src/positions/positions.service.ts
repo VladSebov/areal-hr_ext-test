@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Position } from './entities/position.entity';
+import { Position } from './models/position.model';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
 
@@ -30,13 +30,14 @@ export class PositionsService {
   }
 
   async update(id: number, updateDto: UpdatePositionDto) {
-    await this.repo.update(id, updateDto);
-    return this.findOne(id);
+    const position = await this.findOne(id);
+    const updatedPosition = this.repo.merge(position, updateDto);
+    return await this.repo.save(updatedPosition);
   }
 
   async remove(id: number) {
-    const result = await this.repo.softDelete(id);
-    if (result.affected === 0) throw new NotFoundException(`Position #${id} not found`);
+    const position = await this.findOne(id);
+    await this.repo.softRemove(position);
     return { message: `Position #${id} soft-deleted` };
   }
 }
