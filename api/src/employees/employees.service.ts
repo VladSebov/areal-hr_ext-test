@@ -27,7 +27,12 @@ export class EmployeesService {
   async findOne(id: number) {
     const employee = await this.repo.findOne({
       where: { id },
-      relations: ['operations', 'users'],
+      relations: [
+        'operations',
+        'users',
+        'passportScans',
+        'passportScans.file'
+      ],
     });
 
     if (!employee) {
