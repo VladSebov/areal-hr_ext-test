@@ -19,10 +19,16 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-type="props">
+      <template v-slot:body-cell-createdAt="props">
         <q-td :props="props">
-          <q-chip :color="getOperationColor(props.row.type)" text-color="white" dense>
-            {{ getOperationLabel(props.row.type) }}
+          {{ props.row.createdAt ? new Date(props.row.createdAt).toLocaleDateString('ru-RU') : '—' }}
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-operationType="props">
+        <q-td :props="props">
+          <q-chip :color="getOperationColor(props.row.operationType)" text-color="white" dense>
+            {{ getOperationLabel(props.row.operationType) }}
           </q-chip>
         </q-td>
       </template>
@@ -44,7 +50,7 @@
 
         <q-card-section class="q-gutter-y-md">
           <q-select
-            v-model="form.type"
+            v-model="form.operationType"
             :options="operationOptions"
             label="Тип операции *"
             outlined
@@ -63,7 +69,7 @@
             map-options
           />
 
-          <template v-if="form.type !== 'DISMISSAL'">
+          <template v-if="form.operationType !== 'DISMISSAL'">
             <q-select
               v-model="form.departmentId"
               :options="departmentOptions"
@@ -90,15 +96,6 @@
               dense
             />
           </template>
-
-          <q-input
-            v-model="form.operationDate"
-            label="Дата операции *"
-            type="date"
-            stack-label
-            outlined
-            dense
-          />
         </q-card-section>
 
         <q-card-actions align="right" class="q-pa-md">
@@ -120,13 +117,13 @@ type OperationType = 'HIRE' | 'TRANSFER' | 'SALARY_CHANGE' | 'DISMISSAL';
 
 interface HrOperation {
   id: number;
-  type: OperationType;
+  operationType: OperationType;
   employeeId: number;
   employee?: { firstName: string; lastName: string };
   departmentId?: number;
   positionId?: number;
   salary?: number;
-  operationDate: string;
+  createdAt: string;
 }
 
 const $q = useQuasar();
@@ -136,7 +133,7 @@ const saving = ref(false);
 
 interface SelectOption {
   label: string;
-  value: number;
+  value: string | number;
 }
 
 const employeeOptions = ref<SelectOption[]>([]);
@@ -151,19 +148,25 @@ const operationOptions = [
 ];
 
 const dialog = reactive({ show: false });
+
 const form = reactive({
-  type: 'HIRE' as OperationType,
+  operationType: 'HIRE' as OperationType,
   employeeId: null as number | null,
   departmentId: null as number | null,
   positionId: null as number | null,
-  salary: 0,
-  operationDate: new Date().toISOString().split('T')[0]
+  salary: 0
 });
 
 const columns: QTableColumn[] = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
-  { name: 'operationDate', label: 'Дата', field: 'operationDate', align: 'left', sortable: true },
-  { name: 'type', label: 'Тип', field: 'type', align: 'left' },
+  {
+    name: 'createdAt',
+    label: 'Дата',
+    field: 'createdAt',
+    align: 'left',
+    sortable: true
+  },
+  { name: 'operationType', label: 'Тип', field: 'operationType', align: 'left' },
   { name: 'employee', label: 'Сотрудник', field: 'employee', align: 'left' },
   { name: 'actions', label: 'Действия', field: 'actions', align: 'right' }
 ];
@@ -190,7 +193,7 @@ const loadData = async () => {
       value: d.id
     }));
 
-    positionOptions.value = posts.data.map((p: { id: number; name: string }) => ({
+    positionOptions.value = posts.data.map((p) => ({
       label: p.name,
       value: p.id
     }));
@@ -203,19 +206,18 @@ const loadData = async () => {
 
 const openDialog = () => {
   Object.assign(form, {
-    type: 'HIRE',
+    operationType: 'HIRE',
     employeeId: null,
     departmentId: null,
     positionId: null,
-    salary: 0,
-    operationDate: new Date().toISOString().split('T')[0]
+    salary: 0
   });
   dialog.show = true;
 };
 
 const save = async () => {
-  if (!form.employeeId || !form.operationDate) {
-    $q.notify({ color: 'warning', message: 'Заполните обязательные поля' });
+  if (!form.employeeId) {
+    $q.notify({ color: 'warning', message: 'Выберите сотрудника' });
     return;
   }
 
@@ -223,12 +225,11 @@ const save = async () => {
   try {
     const payload = { ...form } as Record<string, unknown>;
 
-    const toDelete: (keyof typeof payload)[] = [];
-    if (form.type === 'DISMISSAL') {
-      toDelete.push('departmentId', 'positionId', 'salary');
+    if (form.operationType === 'DISMISSAL') {
+      delete payload.departmentId;
+      delete payload.positionId;
+      delete payload.salary;
     }
-
-    toDelete.forEach(key => { if (key in payload) delete payload[key]; });
 
     await api.post('/hr-operations', payload);
     dialog.show = false;
@@ -244,7 +245,7 @@ const save = async () => {
 const confirmDelete = (id: number) => {
   $q.dialog({
     title: 'Отмена операции',
-    message: 'Удаление записи не отменит изменения в данных сотрудника автоматически. Продолжить?',
+    message: 'Удаление записи. Продолжить?',
     cancel: true
   }).onOk(() => {
     void (async () => {
@@ -269,7 +270,7 @@ const getOperationColor = (type: OperationType) => {
     SALARY_CHANGE: 'warning',
     DISMISSAL: 'negative'
   };
-  return colors[type];
+  return colors[type] || 'grey';
 };
 
 onMounted(loadData);
