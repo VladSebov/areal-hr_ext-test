@@ -175,7 +175,7 @@ const loadData = async () => {
       api.get<HrOperation[]>('/hr-operations'),
       api.get<{ id: number; firstName: string; lastName: string }[]>('/employees'),
       api.get<{ id: number; name: string }[]>('/departments'),
-      api.get<{ id: number; title: string }[]>('/positions')
+      api.get<{ id: number; name: string }[]>('/positions')
     ]);
 
     rows.value = ops.data;
@@ -190,8 +190,8 @@ const loadData = async () => {
       value: d.id
     }));
 
-    positionOptions.value = posts.data.map((p) => ({
-      label: p.title,
+    positionOptions.value = posts.data.map((p: { id: number; name: string }) => ({
+      label: p.name,
       value: p.id
     }));
   } catch {
