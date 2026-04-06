@@ -317,6 +317,8 @@ const save = async () => {
     const toDelete: (keyof typeof payload)[] = [
       'id',
       'passportScans',
+      'operations',
+      'users',
       'createdAt',
       'updatedAt',
       'deletedAt'
