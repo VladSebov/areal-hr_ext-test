@@ -64,17 +64,22 @@ export class OperationsHistorySubscriber implements EntitySubscriberInterface {
 
 
     async afterSoftRemove(event: SoftRemoveEvent<any>) {
-        const repo = event.manager.getRepository(OperationsHistory);
+        const repository = event.manager.getRepository(OperationsHistory);
 
-        const history = repo.create({
-            operationType: 'DELETE', // Или 'SOFT_DELETE', если хотите различать
-            entityType: event.metadata.name,
-            entityId: event.entity?.id || event.databaseEntity?.id,
+        const entityId = event.entity?.id || event.databaseEntity?.id;
+
+        if (!entityId) {
+            console.error('Не удалось определить ID сущности для записи истории');
+            return;
+        }
+
+        await repository.save({
+            operationType: 'DELETE',
+            entityType: event.metadata.targetName,
+            entityId: entityId,
             fieldName: 'deletedAt',
             oldValue: null,
             newValue: new Date().toISOString(),
         });
-
-        await repo.save(history);
     }
 }
