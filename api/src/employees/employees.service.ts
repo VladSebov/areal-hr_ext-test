@@ -19,7 +19,8 @@ export class EmployeesService {
 
   async findAll() {
     return await this.repo.find({
-      order: { lastName: 'ASC', firstName: 'ASC' },
+      relations: ['passportScans', 'passportScans.file'],
+      order: { lastName: 'ASC' }
     });
   }
 

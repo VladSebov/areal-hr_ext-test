@@ -241,12 +241,18 @@ const loadData = async () => {
   }
 };
 
-const openDialog = (row?: Employee) => {
+const openDialog = async (row?: Employee) => {
   filesToUpload.value = [];
   if (row) {
     dialog.isEdit = true;
     dialog.activeId = row.id;
     Object.assign(form, { ...row });
+    try {
+      const { data } = await api.get<Employee>(`/employees/${row.id}`);
+      Object.assign(form, data);
+    } catch {
+      Object.assign(form, { ...row });
+    }
   } else {
     dialog.isEdit = false;
     dialog.activeId = null;
