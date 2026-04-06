@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { HrOperationsService } from './hr_operations.service';
 import { CreateHrOperationDto } from './dto/create-hr_operation.dto';
 import { UpdateHrOperationDto } from './dto/update-hr_operation.dto';
@@ -8,8 +17,8 @@ export class HrOperationsController {
   constructor(private readonly hrOperationsService: HrOperationsService) {}
 
   @Post()
-  create(@Body() createHrOperationDto: CreateHrOperationDto) {
-    return this.hrOperationsService.create(createHrOperationDto);
+  create(@Body() createDto: CreateHrOperationDto) {
+    return this.hrOperationsService.create(createDto);
   }
 
   @Get()
@@ -18,17 +27,21 @@ export class HrOperationsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.hrOperationsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.hrOperationsService.findOne(id);
   }
 
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHrOperationDto: UpdateHrOperationDto) {
-    return this.hrOperationsService.update(+id, updateHrOperationDto);
+  update(
+      @Param('id', ParseIntPipe) id: number,
+      @Body() updateDto: UpdateHrOperationDto,
+  ) {
+    return this.hrOperationsService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.hrOperationsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.hrOperationsService.remove(id);
   }
 }

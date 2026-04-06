@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { HrOperation } from '../../hr_operations/models/hr_operation.model';
 import { User } from '../../users/models/user.model';
+import {PassportScan} from "../../passport_scans/models/passport_scan.model";
 
 @Entity('employees')
 export class Employee {
@@ -62,6 +63,9 @@ export class Employee {
 
     @OneToMany(() => HrOperation, (op) => op.employee)
     operations: HrOperation[];
+
+    @OneToMany(() => PassportScan, (scan) => scan.employee)
+    passportScans: PassportScan[];
 
     @OneToMany(() => User, (user) => user.employee)
     users: User[];

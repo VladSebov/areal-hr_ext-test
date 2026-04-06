@@ -1,26 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOperationsHistoryDto } from './dto/create-operations_history.dto';
-import { UpdateOperationsHistoryDto } from './dto/update-operations_history.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OperationsHistory } from './models/operations_history.model';
 
 @Injectable()
 export class OperationsHistoryService {
-  create(createOperationsHistoryDto: CreateOperationsHistoryDto) {
-    return 'This action adds a new operationsHistory';
+  constructor(
+      @InjectRepository(OperationsHistory)
+      private readonly repo: Repository<OperationsHistory>,
+  ) {}
+
+  async findAll(entityName?: string, entityId?: number) {
+    const query = this.repo.createQueryBuilder('history');
+
+    if (entityName) query.andWhere('history.entityName = :entityName', { entityName });
+    if (entityId) query.andWhere('history.entityId = :entityId', { entityId });
+
+    return await query.orderBy('history.createdAt', 'DESC').getMany();
   }
 
-  findAll() {
-    return `This action returns all operationsHistory`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} operationsHistory`;
-  }
-
-  update(id: number, updateOperationsHistoryDto: UpdateOperationsHistoryDto) {
-    return `This action updates a #${id} operationsHistory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} operationsHistory`;
+  async findOne(id: number) {
+    const log = await this.repo.findOne({ where: { id } });
+    if (!log) throw new NotFoundException(`Log #${id} not found`);
+    return log;
   }
 }

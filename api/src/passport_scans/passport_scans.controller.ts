@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PassportScansService } from './passport_scans.service';
 import { CreatePassportScanDto } from './dto/create-passport_scan.dto';
-import { UpdatePassportScanDto } from './dto/update-passport_scan.dto';
 
 @Controller('passport-scans')
 export class PassportScansController {
-  constructor(private readonly passportScansService: PassportScansService) {}
+  constructor(private readonly scansService: PassportScansService) {}
 
   @Post()
-  create(@Body() createPassportScanDto: CreatePassportScanDto) {
-    return this.passportScansService.create(createPassportScanDto);
+  create(@Body() createDto: CreatePassportScanDto) {
+    return this.scansService.create(createDto);
   }
 
   @Get()
   findAll() {
-    return this.passportScansService.findAll();
+    return this.scansService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.passportScansService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.scansService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePassportScanDto: UpdatePassportScanDto) {
-    return this.passportScansService.update(+id, updatePassportScanDto);
+  @Get('employee/:employeeId')
+  findByEmployee(@Param('employeeId', ParseIntPipe) employeeId: number) {
+    return this.scansService.findByEmployee(employeeId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.passportScansService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.scansService.remove(id);
   }
 }

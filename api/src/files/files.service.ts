@@ -1,26 +1,60 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFileDto } from './dto/create-file.dto';
-import { UpdateFileDto } from './dto/update-file.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { File } from './models/file.model';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class FilesService {
-  create(createFileDto: CreateFileDto) {
-    return 'This action adds a new file';
+  constructor(
+      @InjectRepository(File)
+      private readonly repo: Repository<File>,
+      private readonly minioService: MinioService,
+  ) {}
+
+  async upload(file: Express.Multer.File): Promise<File> {
+    const objectKey = `${Date.now()}-${file.originalname}`;
+
+    await this.minioService.uploadFile(
+        objectKey,
+        file.buffer,
+        file.mimetype
+    );
+
+    const fileEntry = this.repo.create({
+      bucketName: process.env.MINIO_BUCKET || 'arealtz-uploads',
+      objectKey: objectKey,
+      name: file.originalname,
+      mimeType: file.mimetype,
+      fileSize: file.size,
+    });
+
+    return await this.repo.save(fileEntry);
   }
 
-  findAll() {
-    return `This action returns all files`;
+  async findAll(): Promise<File[]> {
+    return await this.repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} file`;
+  async findOne(id: number): Promise<File> {
+    const file = await this.repo.findOne({ where: { id } });
+    if (!file) throw new NotFoundException(`File with ID ${id} not found`);
+    return file;
   }
 
-  update(id: number, updateFileDto: UpdateFileDto) {
-    return `This action updates a #${id} file`;
+  async getPresignedUrl(id: number): Promise<string> {
+    const file = await this.findOne(id);
+    return await this.minioService.getFileUrl(file.objectKey);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} file`;
+  async remove(id: number) {
+    const file = await this.findOne(id);
+    const result = await this.repo.softDelete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`File with ID ${id} not found`);
+    }
+
+    return { message: `File #${id} successfully soft-deleted` };
   }
 }
