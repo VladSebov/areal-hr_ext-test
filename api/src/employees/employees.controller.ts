@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -22,8 +23,14 @@ export class EmployeesController {
   }
 
   @Get()
-  findAll() {
-    return this.employeesService.findAll();
+  findAll(
+      @Query('search') search?: string,
+      @Query('showDeleted') showDeleted?: string // приходит как строка "true" или "false"
+  ) {
+    return this.employeesService.findAll({
+      search,
+      showDeleted: showDeleted === 'true', // преобразуем строку в boolean
+    });
   }
 
   @Get(':id')
