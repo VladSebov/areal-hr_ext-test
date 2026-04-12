@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {IsNull, Repository} from 'typeorm';
 import { HrOperation } from './models/hr_operation.model';
 import { CreateHrOperationDto } from './dto/create-hr_operation.dto';
 import { UpdateHrOperationDto } from './dto/update-hr_operation.dto';
@@ -24,6 +24,9 @@ export class HrOperationsService {
 
   async findAll(): Promise<HrOperation[]> {
     return await this.repo.find({
+      where: {
+        deletedAt: IsNull(),
+      },
       relations: ['employee', 'department', 'position'],
       order: { createdAt: 'DESC' },
     });
