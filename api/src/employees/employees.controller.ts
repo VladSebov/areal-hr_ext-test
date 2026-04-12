@@ -22,14 +22,23 @@ export class EmployeesController {
     return this.employeesService.create(createEmployeeDto);
   }
 
+  @Get('filters')
+  getFilters() {
+    return this.employeesService.getFilterValues();
+  }
+
   @Get()
   findAll(
       @Query('search') search?: string,
-      @Query('showDeleted') showDeleted?: string // приходит как строка "true" или "false"
+      @Query('showDeleted') showDeleted?: string,
+      @Query('region') region?: string,
+      @Query('locality') locality?: string,
   ) {
     return this.employeesService.findAll({
       search,
-      showDeleted: showDeleted === 'true', // преобразуем строку в boolean
+      region,
+      locality,
+      showDeleted: showDeleted === 'true',
     });
   }
 

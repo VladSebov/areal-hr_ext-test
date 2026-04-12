@@ -26,6 +26,28 @@
         />
       </div>
 
+      <q-select
+        v-model="filters.region"
+        :options="filterOptions.regions"
+        label="Регион"
+        outlined dense clearable
+        emit-value
+        map-options
+        style="min-width: 200px"
+        @update:model-value="loadData"
+      />
+
+      <q-select
+        v-model="filters.locality"
+        :options="filterOptions.localities"
+        label="Нас. пункт"
+        outlined dense clearable
+        emit-value
+        map-options
+        style="min-width: 200px"
+        @update:model-value="loadData"
+      />
+
       <q-btn color="primary" icon="add" label="Добавить сотрудника" @click="openDialog()" />
     </div>
 
@@ -232,8 +254,25 @@ const saving = ref(false);
 
 const filters = reactive({
   search: '',
-  showDeleted: false
+  showDeleted: false,
+  region: '',
+  locality: ''
 });
+
+const filterOptions = reactive({
+  regions: [] as string[],
+  localities: [] as string[]
+});
+
+const loadFilterOptions = async () => {
+  try {
+    const { data } = await api.get('/employees/filters');
+    filterOptions.regions = data.regions;
+    filterOptions.localities = data.localities;
+  } catch {
+    $q.notify({ color: 'negative', message: 'Ошибка загрузки опций фильтрации' });
+  }
+};
 
 const availableFiles = ref<FileEntity[]>([]);
 const fileSelector = reactive({ show: false });
@@ -259,12 +298,18 @@ const form = reactive(initialFormState());
 const columns: QTableColumn[] = [
   { name: 'id', label: '№', field: 'id', align: 'left', sortable: true },
   { name: 'fullName', label: 'ФИО', field: 'fullName', align: 'left', sortable: true },
-  { name: 'birthDate', label: 'Дата рожд.', field: 'birthDate', align: 'left', sortable: true },
   {
     name: 'passport',
     label: 'Паспорт',
     field: (row: Employee) => `${row.passportSeries} ${row.passportNumber}`,
     align: 'left'
+  },
+  {
+    name: 'registrationRegion',
+    label: 'Регион',
+    field: 'registrationRegion',
+    align: 'left',
+    sortable: true
   },
   { name: 'registrationLocality', label: 'Нас. пункт', field: 'registrationLocality', align: 'left', sortable: true },
   { name: 'actions', label: 'Действия', field: 'actions', align: 'right' }
@@ -276,10 +321,14 @@ const loadData = async () => {
     const { data } = await api.get<Employee[]>('/employees', {
       params: {
         search: filters.search || undefined,
-        showDeleted: filters.showDeleted
+        showDeleted: filters.showDeleted,
+        region: filters.region || undefined,
+        locality: filters.locality || undefined
       }
     });
     rows.value = data;
+
+    await loadFilterOptions();
   } catch {
     $q.notify({ color: 'negative', message: 'Ошибка загрузки данных' });
   } finally {
@@ -390,5 +439,14 @@ const confirmDelete = (id: number) => {
   });
 };
 
-onMounted(loadData);
+onMounted(async () => {
+  try {
+    await Promise.all([
+      loadData(),
+      loadFilterOptions()
+    ]);
+  } catch (e) {
+    console.error('Ошибка при инициализации страницы:', e);
+  }
+});
 </script>

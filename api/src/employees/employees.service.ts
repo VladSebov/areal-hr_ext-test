@@ -18,8 +18,44 @@ export class EmployeesService {
     return await this.repo.save(employee);
   }
 
-  async findAll(query?: { search?: string; showDeleted?: boolean }) {
-    const { search, showDeleted } = query || {};
+  async getFilterValues() {
+    const regions = await this.repo
+        .createQueryBuilder('employee')
+        .select('DISTINCT employee.registrationRegion', 'region')
+        .where('employee.registrationRegion IS NOT NULL')
+        .withDeleted()
+        .getRawMany();
+
+    const localities = await this.repo
+        .createQueryBuilder('employee')
+        .select('DISTINCT employee.registrationLocality', 'locality')
+        .where('employee.registrationLocality IS NOT NULL')
+        .withDeleted()
+        .getRawMany();
+
+    return {
+      regions: regions.map(r => r.region).sort(),
+      localities: localities.map(l => l.locality).sort(),
+    };
+  }
+
+  async findAll(query?: {
+    search?: string;
+    showDeleted?: boolean;
+    region?: string;
+    locality?: string
+  }) {
+    const { search, showDeleted, region, locality } = query || {};
+    const where: any = {};
+
+    if (region) {
+      where.registrationRegion = region;
+    }
+
+    if (locality) {
+      where.registrationLocality = locality;
+    }
+
     const findOptions: any = {
       relations: ['passportScans', 'passportScans.file'],
       order: { lastName: 'ASC' },
@@ -28,10 +64,12 @@ export class EmployeesService {
 
     if (search) {
       findOptions.where = [
-        { lastName: ILike(`%${search}%`) },
-        { firstName: ILike(`%${search}%`) },
-        { passportNumber: ILike(`%${search}%`) },
+        { ...where, lastName: ILike(`%${search}%`) },
+        { ...where, firstName: ILike(`%${search}%`) },
+        { ...where, passportNumber: ILike(`%${search}%`) },
       ];
+    } else {
+      findOptions.where = where;
     }
 
     return await this.repo.find(findOptions);
