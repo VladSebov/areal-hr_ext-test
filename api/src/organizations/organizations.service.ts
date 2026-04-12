@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {IsNull, Repository} from 'typeorm';
 import { Organization } from './models/organization.model';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -19,6 +19,9 @@ export class OrganizationsService {
 
     async findAll() {
         return await this.repo.find({
+            where: {
+                deletedAt: IsNull(),
+            },
             order: { id: 'ASC' },
         });
     }

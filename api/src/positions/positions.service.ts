@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {IsNull, Repository} from 'typeorm';
 import { Position } from './models/position.model';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
@@ -19,6 +19,9 @@ export class PositionsService {
 
   async findAll() {
     return await this.repo.find({
+      where: {
+        deletedAt: IsNull(),
+      },
       order: { id: 'ASC' },
     });
   }

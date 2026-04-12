@@ -6,6 +6,7 @@ import {
     IsString,
     MaxLength
 } from 'class-validator';
+import {Type} from "class-transformer";
 
 export class CreateHrOperationDto {
     @IsInt()
@@ -22,6 +23,7 @@ export class CreateHrOperationDto {
 
     @IsNumber()
     @IsOptional()
+    @Type(() => Number)
     salary?: number;
 
     @IsString()

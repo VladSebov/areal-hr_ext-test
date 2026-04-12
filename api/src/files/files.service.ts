@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {IsNull, Repository} from 'typeorm';
 import { File } from './models/file.model';
 import { MinioService } from '../minio/minio.service';
 
@@ -33,7 +33,12 @@ export class FilesService {
   }
 
   async findAll(): Promise<File[]> {
-    return await this.repo.find({ order: { createdAt: 'DESC' } });
+    return await this.repo.find({
+      where: {
+        deletedAt: IsNull(),
+      },
+      order: { createdAt: 'DESC' }
+    });
   }
 
   async findOne(id: number): Promise<File> {

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -21,9 +22,24 @@ export class EmployeesController {
     return this.employeesService.create(createEmployeeDto);
   }
 
+  @Get('filters')
+  getFilters() {
+    return this.employeesService.getFilterValues();
+  }
+
   @Get()
-  findAll() {
-    return this.employeesService.findAll();
+  findAll(
+      @Query('search') search?: string,
+      @Query('showDeleted') showDeleted?: string,
+      @Query('region') region?: string,
+      @Query('locality') locality?: string,
+  ) {
+    return this.employeesService.findAll({
+      search,
+      region,
+      locality,
+      showDeleted: showDeleted === 'true',
+    });
   }
 
   @Get(':id')
@@ -42,5 +58,10 @@ export class EmployeesController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeesService.remove(id);
+  }
+
+  @Patch(':id/restore')
+  async restore(@Param('id', ParseIntPipe) id: number) {
+    return await this.employeesService.restore(id);
   }
 }

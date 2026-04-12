@@ -85,7 +85,7 @@ const loading = ref(false);
 const fileToUpload = ref<File | null>(null);
 
 const columns: QTableColumn[] = [
-  { name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true },
+  { name: 'id', label: '№', field: 'id', align: 'left', sortable: true },
   { name: 'name', label: 'Название', field: 'name', align: 'left', sortable: true },
   { name: 'mimeType', label: 'Тип', field: 'mimeType', align: 'left' },
   { name: 'fileSize', label: 'Размер', field: 'fileSize', align: 'left', sortable: true },

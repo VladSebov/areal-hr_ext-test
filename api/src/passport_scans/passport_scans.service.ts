@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {IsNull, Repository} from 'typeorm';
 import { PassportScan } from './models/passport_scan.model';
 import { CreatePassportScanDto } from './dto/create-passport_scan.dto';
 
@@ -21,6 +21,9 @@ export class PassportScansService {
 
   async findAll(): Promise<PassportScan[]> {
     return await this.repo.find({
+      where: {
+        deletedAt: IsNull(),
+      },
       relations: ['employee', 'file'],
       order: { createdAt: 'DESC' },
     });

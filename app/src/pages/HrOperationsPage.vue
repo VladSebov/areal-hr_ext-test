@@ -35,7 +35,25 @@
 
       <template v-slot:body-cell-actions="props">
         <q-td :props="props" class="q-gutter-x-sm">
-          <q-btn flat round color="negative" icon="delete" @click="confirmDelete(props.row.id)" />
+          <q-btn
+            v-if="isRemovable(props.row)"
+            flat
+            round
+            color="negative"
+            icon="delete"
+            @click="confirmDelete(props.row.id)"
+          >
+            <q-tooltip>Удалить последнюю операцию</q-tooltip>
+          </q-btn>
+
+          <q-icon
+            v-else
+            name="lock"
+            color="grey-4"
+            size="xs"
+          >
+            <q-tooltip>Удаление заблокировано (есть более свежие записи)</q-tooltip>
+          </q-icon>
         </q-td>
       </template>
     </q-table>
@@ -67,6 +85,7 @@
             dense
             emit-value
             map-options
+            @update:model-value="handleEmployeeChange"
           />
 
           <template v-if="form.operationType !== 'DISMISSAL'">
@@ -90,7 +109,7 @@
             />
             <q-input
               v-model.number="form.salary"
-              label="Зарплата *"
+              label="Зарплата"
               type="number"
               outlined
               dense
@@ -108,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import type { QTableColumn } from 'quasar';
 import { api } from 'boot/axios';
@@ -119,9 +138,11 @@ interface HrOperation {
   id: number;
   operationType: OperationType;
   employeeId: number;
-  employee?: { firstName: string; lastName: string };
+  employee?: { id: number; firstName: string; lastName: string };
   departmentId?: number;
+  department?: { id: number; name: string };
   positionId?: number;
+  position?: {id: number; name: string };
   salary?: number;
   createdAt: string;
 }
@@ -158,7 +179,7 @@ const form = reactive({
 });
 
 const columns: QTableColumn[] = [
-  { name: 'id', label: 'ID', field: 'id', align: 'left' },
+  { name: 'id', label: '№', field: 'id', align: 'left' },
   {
     name: 'createdAt',
     label: 'Дата',
@@ -166,10 +187,77 @@ const columns: QTableColumn[] = [
     align: 'left',
     sortable: true
   },
-  { name: 'operationType', label: 'Тип', field: 'operationType', align: 'left' },
-  { name: 'employee', label: 'Сотрудник', field: 'employee', align: 'left' },
+  { name: 'operationType', label: 'Тип', field: 'operationType', align: 'left', sortable: true},
+  { name: 'employee', label: 'Сотрудник', field: 'employee', align: 'left', sortable: true},
+
+  {
+    name: 'department',
+    label: 'Отдел',
+    field: (row: HrOperation) => row.department?.name || '-',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'position',
+    label: 'Должность',
+    field: (row: HrOperation) => row.position?.name || '-',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'salary',
+    label: 'Оклад',
+    field: (row: HrOperation) => row.salary ? `${row.salary.toLocaleString()} руб.` : '-',
+    align: 'left',
+    sortable: true
+  },
+
   { name: 'actions', label: 'Действия', field: 'actions', align: 'right' }
 ];
+
+const handleEmployeeChange = (empId: number | null) => {
+  if (!empId) return;
+
+  if (form.operationType === 'HIRE') {
+    form.departmentId = null;
+    form.positionId = null;
+    form.salary = 0;
+    return;
+  }
+
+  const employeeOps = rows.value.filter(op =>
+    op.employeeId === empId || op.employee?.id === empId
+  );
+
+  if (employeeOps.length === 0) {
+    console.warn('No operations found for employee ID:', empId);
+    return;
+  }
+
+  const lastOp = [...employeeOps].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )[0];
+
+  if (lastOp) {
+    form.departmentId = lastOp.departmentId || lastOp.department?.id || null;
+    form.positionId = lastOp.positionId || lastOp.position?.id || null;
+    form.salary = lastOp.salary || 0;
+  }
+};
+
+watch(() => form.operationType, () => {
+  handleEmployeeChange(form.employeeId);
+});
+
+const isRemovable = (row: HrOperation) => {
+  const employeeOps = rows.value.filter(r => r.employeeId === row.employeeId);
+
+  const sorted = [...employeeOps].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  return sorted.length > 0 && sorted[0]?.id === row.id;
+};
 
 const loadData = async () => {
   loading.value = true;
@@ -225,10 +313,8 @@ const save = async () => {
   try {
     const payload = { ...form } as Record<string, unknown>;
 
-    if (form.operationType === 'DISMISSAL') {
-      delete payload.departmentId;
-      delete payload.positionId;
-      delete payload.salary;
+    if (payload.salary === '' || payload.salary === null) {
+      payload.salary = 0;
     }
 
     await api.post('/hr-operations', payload);
