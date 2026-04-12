@@ -115,4 +115,23 @@ export class EmployeesService {
     await this.repo.softRemove(employee);
     return {message: `Employee #${id} successfully soft-deleted`};
   }
+
+  async restore(id: number) {
+    const employee = await this.repo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Сотрудник с ID ${id} не найден`);
+    }
+
+    if (!employee.deletedAt) {
+      return { message: `Сотрудник #${id} уже активен` };
+    }
+
+    await this.repo.restore(id);
+
+    return { message: `Сотрудник #${id} успешно восстановлен` };
+  }
 }

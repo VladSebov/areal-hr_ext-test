@@ -59,4 +59,9 @@ export class EmployeesController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeesService.remove(id);
   }
+
+  @Patch(':id/restore')
+  async restore(@Param('id', ParseIntPipe) id: number) {
+    return await this.employeesService.restore(id);
+  }
 }
