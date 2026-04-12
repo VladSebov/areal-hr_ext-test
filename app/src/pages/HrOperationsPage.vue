@@ -121,7 +121,9 @@ interface HrOperation {
   employeeId: number;
   employee?: { firstName: string; lastName: string };
   departmentId?: number;
+  department?: { name: string };
   positionId?: number;
+  position?: { name: string };
   salary?: number;
   createdAt: string;
 }
@@ -158,7 +160,7 @@ const form = reactive({
 });
 
 const columns: QTableColumn[] = [
-  { name: 'id', label: 'ID', field: 'id', align: 'left' },
+  { name: 'id', label: '№', field: 'id', align: 'left' },
   {
     name: 'createdAt',
     label: 'Дата',
@@ -166,8 +168,31 @@ const columns: QTableColumn[] = [
     align: 'left',
     sortable: true
   },
-  { name: 'operationType', label: 'Тип', field: 'operationType', align: 'left' },
-  { name: 'employee', label: 'Сотрудник', field: 'employee', align: 'left' },
+  { name: 'operationType', label: 'Тип', field: 'operationType', align: 'left', sortable: true},
+  { name: 'employee', label: 'Сотрудник', field: 'employee', align: 'left', sortable: true},
+
+  {
+    name: 'department',
+    label: 'Отдел',
+    field: (row: HrOperation) => row.department?.name || '-',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'position',
+    label: 'Должность',
+    field: (row: HrOperation) => row.position?.name || '-',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'salary',
+    label: 'Оклад',
+    field: (row: HrOperation) => row.salary ? `${row.salary.toLocaleString()} руб.` : '-',
+    align: 'left',
+    sortable: true
+  },
+
   { name: 'actions', label: 'Действия', field: 'actions', align: 'right' }
 ];
 
