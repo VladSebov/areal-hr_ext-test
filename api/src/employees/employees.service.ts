@@ -123,15 +123,15 @@ export class EmployeesService {
     });
 
     if (!employee) {
-      throw new NotFoundException(`Сотрудник с ID ${id} не найден`);
+      throw new NotFoundException(`Employee with ID ${id} not found`);
     }
 
     if (!employee.deletedAt) {
-      return { message: `Сотрудник #${id} уже активен` };
+      return { message: `Employee #${id} is already active` };
     }
 
     await this.repo.restore(id);
 
-    return { message: `Сотрудник #${id} успешно восстановлен` };
+    return { message: `Employee #${id} successfully restored` };
   }
 }

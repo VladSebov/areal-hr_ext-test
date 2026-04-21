@@ -5,6 +5,7 @@ import { HrOperation } from './models/hr_operation.model';
 import { CreateHrOperationDto } from './dto/create-hr_operation.dto';
 import { UpdateHrOperationDto } from './dto/update-hr_operation.dto';
 import { EmployeesService } from '../employees/employees.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class HrOperationsService {
@@ -13,6 +14,8 @@ export class HrOperationsService {
       private readonly repo: Repository<HrOperation>,
       @Inject(forwardRef(() => EmployeesService))
       private readonly employeesService: EmployeesService,
+      @Inject(forwardRef(() => UsersService))
+      private readonly usersService: UsersService,
   ) {}
 
   async create(createDto: CreateHrOperationDto): Promise<HrOperation> {
@@ -30,6 +33,11 @@ export class HrOperationsService {
         await this.employeesService.remove(createDto.employeeId);
       } catch (error) {
         console.error(`Failed to soft-remove employee ${createDto.employeeId}:`, error.message);
+      }
+      try {
+        await this.usersService.softRemoveByEmployee(createDto.employeeId);
+      } catch (error) {
+        console.error(`Failed to deactivate user for employee ${createDto.employeeId}:`, error.message);
       }
     }
 
@@ -100,10 +108,21 @@ export class HrOperationsService {
     }
 
     if (operation.operationType === 'DISMISSAL') {
-      await this.employeesService.restore(empId);
+      try {
+        await this.employeesService.restore(empId);
+      } catch (e) {
+        console.error(`[RESTORE ERROR] Failed to restore employee ${empId}:`, e.message);
+      }
+
+      try {
+        await this.usersService.restoreByEmployee(empId);
+      } catch (e) {
+        console.error(`[RESTORE ERROR] Failed to restore user for employee ${empId}:`, e.message);
+      }
     }
 
     await this.repo.softRemove(operation);
+
     return { message: `HR Operation #${id} successfully soft-removed` };
   }
 }

@@ -1,26 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Role } from './models/role.model';
 
 @Injectable()
-export class RolesService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+export class RolesService implements OnModuleInit {
+  constructor(
+      @InjectRepository(Role)
+      private readonly repo: Repository<Role>,
+  ) {}
+
+  async onModuleInit() {
+    await this.seedRoles();
   }
 
-  findAll() {
-    return `This action returns all roles`;
+  private async seedRoles() {
+    const rolesToCreate = ['Администратор', 'Менеджер по персоналу'];
+
+    for (const roleName of rolesToCreate) {
+      const existingRole = await this.repo.findOne({ where: { role: roleName } });
+
+      if (!existingRole) {
+        const newRole = this.repo.create({ role: roleName });
+        await this.repo.save(newRole);
+        console.log(`Role "${roleName}" has been seeded.`);
+      }
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
-  }
-
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async findAll(): Promise<Role[]> {
+    return await this.repo.find({ order: { id: 'ASC' } });
   }
 }
