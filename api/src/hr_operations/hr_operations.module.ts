@@ -7,11 +7,13 @@ import { Employee } from '../employees/models/employee.model';
 import { Department } from '../departments/models/department.model';
 import { Position } from '../positions/models/position.model';
 import {EmployeesModule} from "../employees/employees.module";
+import {UsersModule} from "../users/users.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([HrOperation, Employee, Department, Position]),
     forwardRef(() => EmployeesModule),
+    forwardRef(() => UsersModule),
   ],
   controllers: [HrOperationsController],
   providers: [HrOperationsService],

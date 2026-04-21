@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { User } from './models/user.model';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,7 +14,11 @@ export class UsersService {
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
-    const existing = await this.repo.findOne({ where: { login: dto.login } });
+    const existing = await this.repo.findOne({ 
+      where: { login: dto.login },
+      withDeleted: true 
+    });
+    
     if (existing) {
       throw new BadRequestException('Login is already taken');
     }
@@ -34,13 +38,13 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.repo.find({
-      where: {
-        deletedAt: IsNull(),
-      },
-      relations: ['role', 'employee'],
-      order: { id: 'ASC' },
-    });
+    return await this.repo.createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('user.employee', 'employee')
+      .where('user.deletedAt IS NULL')
+      .andWhere('employee.deletedAt IS NULL') 
+      .orderBy('user.id', 'ASC')
+      .getMany();
   }
 
   async findOne(id: number): Promise<User> {
@@ -49,8 +53,8 @@ export class UsersService {
       relations: ['role', 'employee'],
     });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    if (!user || user.employee?.deletedAt) {
+      throw new NotFoundException(`Пользователь не найден или связанный сотрудник уволен`);
     }
 
     return user;
@@ -89,5 +93,44 @@ export class UsersService {
     const user = await this.findOne(id);
     await this.repo.softRemove(user);
     return { message: `User #${id} successfully soft-removed` };
+  }
+
+  async softRemoveByEmployee(employeeId: number) {
+    console.log(`Searching users for employeeId: ${employeeId}`);
+    const users = await this.repo.find({
+      where: { 
+        employee: { id: employeeId }, 
+      },
+      withDeleted: true
+    });
+    
+    console.log(`Found users: ${users.length}`);
+    if (users.length > 0) {
+      await this.repo.softRemove(users);
+      return { 
+        message: `Access for ${users.length} user(s) linked to employee #${employeeId} has been deactivated` 
+      };
+    }
+    
+    return { message: `No active users found for employee #${employeeId}` };
+  }
+
+  async restoreByEmployee(employeeId: number) {
+    const user = await this.repo.findOne({
+      where: { 
+        employee: { id: employeeId },
+        deletedAt: Not(IsNull()) 
+      },
+      withDeleted: true,
+    });
+
+    if (user) {
+      await this.repo.recover(user);
+      return { 
+        message: `User account for employee #${employeeId} has been successfully restored` 
+      };
+    }
+
+    return { message: `No deactivated account found for employee #${employeeId}` };
   }
 }
