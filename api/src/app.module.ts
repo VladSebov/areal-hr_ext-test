@@ -22,6 +22,7 @@ import {Employee} from "./employees/models/employee.model";
 import {Role} from "./roles/models/role.model";
 import {User} from "./users/models/user.model";
 import {HrOperation} from "./hr_operations/models/hr_operation.model";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import {HrOperation} from "./hr_operations/models/hr_operation.model";
       OperationsHistoryModule,
       UsersModule,
       RolesModule,
+      AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
