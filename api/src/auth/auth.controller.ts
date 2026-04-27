@@ -9,7 +9,7 @@ export class AuthController {
   @Post('login')
   async login(@Request() req) {
     return {
-      message: 'Успешный вход',
+      message: 'Login successfully',
       user: req.user
     };
   }
@@ -23,6 +23,6 @@ export class AuthController {
   @Post('logout')
   async logout(@Request() req) {
     req.session.destroy();
-    return { message: 'Сессия завершена' };
+    return { message: 'Session destroyed' };
   }
 }
