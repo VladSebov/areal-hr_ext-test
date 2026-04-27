@@ -45,7 +45,7 @@ async function bootstrap() {
   app.use(passport.session());
 
   const port = configService.get<number>('NEST_API_PORT') || 3000;
-  const vueAppPort = configService.get<number>('VUE_APP_PORT') || 9000;
+  const vueAppPort = configService.get<number>('VUE_APP_PORT') || 8080;
 
   app.enableCors({
     origin: `http://localhost:${vueAppPort}`,
