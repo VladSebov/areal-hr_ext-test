@@ -28,6 +28,7 @@ async function bootstrap() {
         limitSubquery: false,
         ttl: 86400,
       }).connect(sessionRepository),
+      name: 'connect.sid',
       secret: configService.get<string>('SESSION_SECRET') || 'default-secret-key',
       resave: false,
       saveUninitialized: false,

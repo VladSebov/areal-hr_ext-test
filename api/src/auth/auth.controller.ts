@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Request,
+  UseGuards,
+  HttpStatus,
+  HttpCode,
+  InternalServerErrorException
+} from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 
@@ -6,6 +15,7 @@ import { AuthenticatedGuard } from './guards/authenticated.guard';
 export class AuthController {
 
   @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Request() req) {
     return {
@@ -20,9 +30,22 @@ export class AuthController {
     return req.user;
   }
 
+  @UseGuards(AuthenticatedGuard)
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   async logout(@Request() req) {
-    req.session.destroy();
+    req.logout((err) => {
+      if (err) throw new InternalServerErrorException('Logout failed');
+    });
+
+    req.session.destroy((err) => {
+      if (err) {
+        throw new InternalServerErrorException('Could not destroy session');
+      }
+    });
+
+    req.res.clearCookie('connect.sid');
+
     return { message: 'Session destroyed' };
   }
 }
