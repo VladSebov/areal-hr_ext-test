@@ -3,11 +3,13 @@ import {
   Post,
   Get,
   Request,
+  Res,
   UseGuards,
   HttpStatus,
   HttpCode,
   InternalServerErrorException
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 
@@ -33,19 +35,20 @@ export class AuthController {
   @UseGuards(AuthenticatedGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Request() req) {
+  async logout(@Request() req, @Res() res: Response) {
     req.logout((err) => {
-      if (err) throw new InternalServerErrorException('Logout failed');
-    });
-
-    req.session.destroy((err) => {
       if (err) {
-        throw new InternalServerErrorException('Could not destroy session');
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Passport logout error' });
       }
+
+      req.session.destroy((destroyErr) => {
+        if (destroyErr) {
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Session destruction error' });
+        }
+
+        res.clearCookie('connect.sid');
+        return res.json({ message: 'Logout successful' });
+      });
     });
-
-    req.res.clearCookie('connect.sid');
-
-    return { message: 'Session destroyed' };
   }
 }
