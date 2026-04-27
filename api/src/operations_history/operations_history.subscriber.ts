@@ -18,6 +18,9 @@ export class OperationsHistorySubscriber implements EntitySubscriberInterface {
 
     async afterInsert(event: InsertEvent<any>) {
         if (event.metadata.target === OperationsHistory) return;
+        if (event.metadata.targetName === 'SessionEntity' || event.metadata.tableName === 'sessions') {
+            return;
+        }
         if (!event.entity) return;
         const repo = event.manager.getRepository(OperationsHistory);
         const history = repo.create({

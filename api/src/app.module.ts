@@ -23,6 +23,7 @@ import {Role} from "./roles/models/role.model";
 import {User} from "./users/models/user.model";
 import {HrOperation} from "./hr_operations/models/hr_operation.model";
 import { AuthModule } from './auth/auth.module';
+import {Session} from "./auth/models/session.model";
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Organization, Department, Position, Role, User, HrOperation, Employee],
+        entities: [Organization, Department, Position, Role, User, HrOperation, Employee, Session],
         autoLoadEntities: true,
 
         synchronize: configService.get<string>('NODE_ENV') !== 'production',

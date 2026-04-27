@@ -4,10 +4,16 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
 import passport from 'passport';
+import { TypeormStore } from 'connect-typeorm';
+import { DataSource } from 'typeorm';
+import { Session } from './auth/models/session.model';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  const dataSource = app.get(DataSource);
+  const sessionRepository = dataSource.getRepository(Session);
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -17,6 +23,11 @@ async function bootstrap() {
 
   app.use(
     session({
+      store: new TypeormStore({
+        cleanupLimit: 2,
+        limitSubquery: false,
+        ttl: 86400,
+      }).connect(sessionRepository),
       secret: configService.get<string>('SESSION_SECRET') || 'default-secret-key',
       resave: false,
       saveUninitialized: false,
