@@ -117,7 +117,7 @@ export class UsersService {
     });
 
     if (!user || user.employee?.deletedAt) {
-      throw new NotFoundException(`Пользователь не найден или связанный сотрудник уволен`);
+      throw new NotFoundException(`User not found or employee is not active`);
     }
 
     return user;
@@ -159,15 +159,13 @@ export class UsersService {
   }
 
   async softRemoveByEmployee(employeeId: number) {
-    console.log(`Searching users for employeeId: ${employeeId}`);
     const users = await this.repo.find({
       where: { 
         employee: { id: employeeId }, 
       },
       withDeleted: true
     });
-    
-    console.log(`Found users: ${users.length}`);
+
     if (users.length > 0) {
       await this.repo.softRemove(users);
       return { 
