@@ -5,13 +5,76 @@ import { User } from './models/user.model';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as argon2 from 'argon2';
+import {Employee} from "../employees/models/employee.model";
+import {Role} from "../roles/models/role.model";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class UsersService {
   constructor(
       @InjectRepository(User)
       private readonly repo: Repository<User>,
+      @InjectRepository(Role)
+      private readonly roleRepo: Repository<Role>,
+      @InjectRepository(Employee)
+      private readonly employeeRepo: Repository<Employee>,
+      private readonly configService: ConfigService,
   ) {}
+
+  async onModuleInit(): Promise<{ message: string } | void> {
+    return await this.seedAdmin();
+  }
+
+  private async seedAdmin(): Promise<{ message: string } | void> {
+    const adminLogin = this.configService.get<string>('ADMIN_LOGIN') || 'admin';
+    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') || 'admin123';
+
+    const existingAdmin = await this.repo.findOne({ where: { login: adminLogin } });
+    if (existingAdmin) return;
+
+    const adminRole = await this.roleRepo.findOne({ where: { role: 'Администратор' } });
+    if (!adminRole) {
+      return { message: 'Role "Администратор" not found. Seed failed.' };
+    }
+
+    let adminEmployee = await this.employeeRepo.findOne({
+      where: { lastName: 'Системный', firstName: 'Администратор' }
+    });
+
+    if (!adminEmployee) {
+      adminEmployee = this.employeeRepo.create({
+        lastName: 'Системный',
+        firstName: 'Администратор',
+        middleName: 'Главный',
+        birthDate: new Date('1970-01-01'),
+        passportSeries: '0000',
+        passportNumber: '000000',
+        passportCode: '000000',
+        passportPlace: 'Системная запись',
+        passportDate: new Date('1970-01-01'),
+        registrationRegion: 'Система',
+        registrationLocality: 'Система',
+        registrationStreet: 'Система',
+        registrationHouse: '0',
+      });
+      adminEmployee = await this.employeeRepo.save(adminEmployee);
+    }
+
+    const passwordHash = await argon2.hash(adminPassword);
+
+    const adminUser = this.repo.create({
+      login: adminLogin,
+      passwordHash,
+      firstName: 'Администратор',
+      lastName: 'Системный',
+      role: adminRole,
+      employee: adminEmployee,
+    });
+
+    await this.repo.save(adminUser);
+
+    return { message: `Default administrator "${adminLogin}" created successfully` };
+  }
 
   async create(dto: CreateUserDto): Promise<User> {
     const existing = await this.repo.findOne({ 
@@ -37,14 +100,27 @@ export class UsersService {
     return result as User;
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.repo.createQueryBuilder('user')
-      .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.employee', 'employee')
-      .where('user.deletedAt IS NULL')
-      .andWhere('employee.deletedAt IS NULL') 
-      .orderBy('user.id', 'ASC')
-      .getMany();
+  async findAll(query: { search?: string; roleId?: number }): Promise<User[]> {
+    const { search, roleId } = query;
+
+    const qb = this.repo.createQueryBuilder('user')
+        .leftJoinAndSelect('user.role', 'role')
+        .leftJoinAndSelect('user.employee', 'employee')
+        .where('user.deletedAt IS NULL')
+        .andWhere('employee.deletedAt IS NULL');
+
+    if (roleId) {
+      qb.andWhere('role.id = :roleId', { roleId });
+    }
+
+    if (search) {
+      qb.andWhere(
+          '(user.login ILIKE :search OR employee.lastName ILIKE :search OR employee.firstName ILIKE :search)',
+          { search: `%${search}%` }
+      );
+    }
+
+    return qb.orderBy('user.id', 'ASC').getMany();
   }
 
   async findOne(id: number): Promise<User> {
@@ -54,7 +130,7 @@ export class UsersService {
     });
 
     if (!user || user.employee?.deletedAt) {
-      throw new NotFoundException(`Пользователь не найден или связанный сотрудник уволен`);
+      throw new NotFoundException(`User not found or employee is not active`);
     }
 
     return user;
@@ -96,15 +172,13 @@ export class UsersService {
   }
 
   async softRemoveByEmployee(employeeId: number) {
-    console.log(`Searching users for employeeId: ${employeeId}`);
     const users = await this.repo.find({
       where: { 
         employee: { id: employeeId }, 
       },
       withDeleted: true
     });
-    
-    console.log(`Found users: ${users.length}`);
+
     if (users.length > 0) {
       await this.repo.softRemove(users);
       return { 

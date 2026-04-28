@@ -4,7 +4,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
+      {
+        path: '',
+        name: 'index',
+        component: () => import('pages/IndexPage.vue')
+      },
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: 'organizations', component: () => import('pages/OrganizationsPage.vue') },
       { path: 'departments', component: () => import('pages/DepartmentsPage.vue') },
@@ -15,6 +21,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'hr-operations', component: () => import('pages/HrOperationsPage.vue') },
       { path: 'operations-history', component: () => import('pages/OperationsHistoryPage.vue') }
     ],
+  },
+
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('pages/LoginPage.vue'),
   },
 
   // Always leave this as last one,
