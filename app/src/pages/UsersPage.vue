@@ -2,6 +2,29 @@
   <q-page padding>
     <div class="row items-center justify-between q-mb-md">
       <div class="text-h5 text-weight-bold">Управление пользователями</div>
+
+      <q-input
+        v-model="filters.search"
+        placeholder="Поиск (ФИО, логин)..."
+        outlined
+        dense
+        clearable
+        style="min-width: 300px"
+        @update:model-value="loadData"
+      >
+        <template v-slot:append><q-icon name="search" /></template>
+      </q-input>
+
+      <q-select
+        v-model="filters.roleId"
+        :options="roleOptions"
+        label="Роль"
+        outlined dense clearable
+        emit-value map-options
+        style="min-width: 200px"
+        @update:model-value="loadData"
+      />
+
       <q-btn color="primary" icon="add" label="Добавить пользователя" @click="openDialog()" />
     </div>
 
@@ -16,7 +39,7 @@
 
       <template v-slot:body-cell-employee="props">
         <q-td :props="props">
-          {{ props.row.employee?.lastName }} {{ props.row.employee?.firstName }}
+          {{ props.row.employee?.lastName }} {{ props.row.employee?.firstName }} {{ props.row.employee?.middleName }}
         </q-td>
       </template>
 
@@ -155,6 +178,11 @@ const filteredEmployeeOptions = computed(() => {
   });
 });
 
+const filters = reactive({
+  search: '',
+  roleId: null as number | null,
+});
+
 const dialog = reactive({ show: false });
 const form = reactive({
   lastName: '',
@@ -171,6 +199,7 @@ const columns: QTableColumn[] = [
   { name: 'login', label: 'Логин', field: 'login', align: 'left', sortable: true },
   { name: 'lastName', label: 'Фамилия', field: 'lastName', sortable: true, align: 'left' },
   { name: 'firstName', label: 'Имя', field: 'firstName', sortable: true, align: 'left' },
+  { name: 'middleName', label: 'Отчество', field: 'middleName', sortable: true, align: 'left' },
   { name: 'role', label: 'Роль', field: 'role', sortable: true, align: 'left' },
   { name: 'actions', label: 'Действия', field: 'actions', align: 'right' },
 ];
@@ -195,7 +224,12 @@ const loadData = async () => {
   loading.value = true;
   try {
     const [users, roles, emps] = await Promise.all([
-      api.get<User[]>('/users'),
+      api.get<User[]>('/users', {
+        params: {
+          search: filters.search || undefined,
+          roleId: filters.roleId || undefined
+        }
+      }),
       api.get<Role[]>('/roles'),
       api.get<Employee[]>('/employees'),
     ]);

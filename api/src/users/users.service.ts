@@ -100,14 +100,27 @@ export class UsersService {
     return result as User;
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.repo.createQueryBuilder('user')
-      .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.employee', 'employee')
-      .where('user.deletedAt IS NULL')
-      .andWhere('employee.deletedAt IS NULL') 
-      .orderBy('user.id', 'ASC')
-      .getMany();
+  async findAll(query: { search?: string; roleId?: number }): Promise<User[]> {
+    const { search, roleId } = query;
+
+    const qb = this.repo.createQueryBuilder('user')
+        .leftJoinAndSelect('user.role', 'role')
+        .leftJoinAndSelect('user.employee', 'employee')
+        .where('user.deletedAt IS NULL')
+        .andWhere('employee.deletedAt IS NULL');
+
+    if (roleId) {
+      qb.andWhere('role.id = :roleId', { roleId });
+    }
+
+    if (search) {
+      qb.andWhere(
+          '(user.login ILIKE :search OR employee.lastName ILIKE :search OR employee.firstName ILIKE :search)',
+          { search: `%${search}%` }
+      );
+    }
+
+    return qb.orderBy('user.id', 'ASC').getMany();
   }
 
   async findOne(id: number): Promise<User> {

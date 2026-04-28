@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  UseGuards
+  UseGuards, Query
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,8 +28,11 @@ export class UsersController {
   }
 
   @Get()
-  async findAll() {
-    return await this.usersService.findAll();
+  findAll(
+      @Query('search') search?: string,
+      @Query('roleId') roleId?: number,
+  ) {
+    return this.usersService.findAll({ search, roleId });
   }
 
   @Get(':id')
