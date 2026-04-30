@@ -40,7 +40,9 @@ import { ref } from 'vue';
 import { api } from 'boot/axios';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from 'src/stores/auth-store';
+import {useQuasar} from "quasar";
 
+const $q = useQuasar();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -55,8 +57,7 @@ async function handleLogin() {
     authStore.setLoggedIn(true, response.data.user);
     await router.push({ name: 'index' });
   } catch {
-    console.error('Login error:');
-    alert('Неверный логин или пароль');
+    $q.notify({ color: 'negative', message: 'Неверный логин или пароль'});
   }
 }
 </script>
