@@ -106,7 +106,7 @@ export class EmployeesService {
   }
 
   async remove(id: number) {
-    const employee = await this.findOne(id);
+    const employee = await this.findOne(id, true);
 
     if (employee.deletedAt) {
       throw new BadRequestException(`Employee ID ${id} is already dismissed`);
