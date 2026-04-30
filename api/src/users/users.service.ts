@@ -22,7 +22,7 @@ export class UsersService {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.seedAdmin();
+    return await this.seedAdmin();
   }
 
   private async seedAdmin(): Promise<{ message: string } | void> {
