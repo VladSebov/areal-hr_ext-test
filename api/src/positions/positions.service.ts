@@ -1,16 +1,41 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {IsNull, Repository} from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Position } from './models/position.model';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
 
 @Injectable()
-export class PositionsService {
+export class PositionsService implements OnApplicationBootstrap {
   constructor(
       @InjectRepository(Position)
       private readonly repo: Repository<Position>,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.seed();
+  }
+
+  async seed() {
+    const count = await this.repo.count();
+    if (count > 0) {
+      return { message: 'Positions already seeded' };
+    }
+
+    const seedData: CreatePositionDto[] = [
+      { name: 'Генеральный директор' },
+      { name: 'Технический директор' },
+      { name: 'Системный администратор' },
+      { name: 'Программист NestJS' },
+      { name: 'Менеджер по персоналу' },
+      { name: 'Бухгалтер' },
+    ];
+
+    const positions = this.repo.create(seedData);
+    await this.repo.save(positions);
+
+    return { message: `Successfully seeded ${seedData.length} positions` };
+  }
 
   async create(createDto: CreatePositionDto) {
     const position = this.repo.create(createDto);

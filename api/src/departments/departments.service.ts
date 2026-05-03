@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {IsNull, Repository} from 'typeorm';
 import { Department } from './models/department.model';
@@ -6,11 +6,51 @@ import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Injectable()
-export class DepartmentsService {
+export class DepartmentsService implements OnApplicationBootstrap {
   constructor(
       @InjectRepository(Department)
       private readonly repo: Repository<Department>,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.seed();
+  }
+
+  async seed() {
+    const count = await this.repo.count();
+    if (count > 0) {
+      return { message: 'Departments already seeded' };
+    }
+
+    const seedData = [
+      {
+        name: 'Администрация',
+        comment: 'Руководство компании',
+        organization: { id: 1 },
+      },
+      {
+        name: 'IT-отдел',
+        comment: 'Разработка и поддержка',
+        organization: { id: 1 },
+      },
+      {
+        name: 'Отдел кадров',
+        organization: { id: 2 },
+      },
+    ];
+
+    const departments = this.repo.create(seedData);
+    const savedDepartments = await this.repo.save(departments);
+
+    const subDepartment = this.repo.create({
+      name: 'Группа Frontend-разработки',
+      organization: { id: 1 },
+      parent: { id: savedDepartments[1].id },
+    });
+    await this.repo.save(subDepartment);
+
+    return { message: `Successfully seeded ${savedDepartments.length + 1} departments` };
+  }
 
   async create(createDto: CreateDepartmentDto) {
     const departmentData: any = {
