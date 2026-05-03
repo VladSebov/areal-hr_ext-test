@@ -1,6 +1,6 @@
-import {BadRequestException, forwardRef, Inject, Injectable, NotFoundException} from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {IsNull, Repository} from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { HrOperation } from './models/hr_operation.model';
 import { CreateHrOperationDto } from './dto/create-hr_operation.dto';
 import { UpdateHrOperationDto } from './dto/update-hr_operation.dto';
@@ -8,7 +8,7 @@ import { EmployeesService } from '../employees/employees.service';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
-export class HrOperationsService {
+export class HrOperationsService implements OnApplicationBootstrap {
   constructor(
       @InjectRepository(HrOperation)
       private readonly repo: Repository<HrOperation>,
@@ -17,6 +17,39 @@ export class HrOperationsService {
       @Inject(forwardRef(() => UsersService))
       private readonly usersService: UsersService,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.seed();
+  }
+
+  async seed() {
+    const count = await this.repo.count();
+    if (count > 0) {
+      return { message: 'HR Operations already seeded' };
+    }
+
+    const seedData: CreateHrOperationDto = {
+      employeeId: 1,
+      departmentId: 1,
+      positionId: 3,
+      salary: 75000,
+      operationType: 'HIRE'
+    };
+
+    try {
+      const operation = this.repo.create({
+        ...seedData,
+        employee: { id: seedData.employeeId },
+        department: { id: seedData.departmentId },
+        position: { id: seedData.positionId },
+      });
+
+      await this.repo.save(operation);
+      return { message: 'Successfully seeded HR operation: SysAdmin appointment' };
+    } catch (error) {
+      return { message: `Seed failed: ${error.message}. Ensure Employee #1 and Position #3 exist.` };
+    }
+  }
 
   async create(createDto: CreateHrOperationDto): Promise<HrOperation> {
     const operation = this.repo.create({
