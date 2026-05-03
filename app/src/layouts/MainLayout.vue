@@ -60,7 +60,9 @@ import { useRouter } from 'vue-router';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'src/stores/auth-store';
 import EssentialLink from 'components/EssentialLink.vue';
+import {useQuasar} from "quasar";
 
+const $q = useQuasar();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -84,8 +86,8 @@ function toggleLeftDrawer() {
 async function handleLogout() {
   try {
     await api.post('/auth/logout');
-  } catch (error) {
-    console.error('Ошибка при выходе из системы:', error);
+  } catch {
+    $q.notify({ color: 'negative', message: 'Ошибка при выходе'});
   } finally {
     authStore.setLoggedIn(false, null);
     await router.push({ name: 'login' });

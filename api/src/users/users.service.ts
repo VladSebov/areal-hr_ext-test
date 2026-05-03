@@ -21,7 +21,7 @@ export class UsersService {
       private readonly configService: ConfigService,
   ) {}
 
-  async onModuleInit(): Promise<{ message: string } | void> {
+  async onApplicationBootstrap() {
     return await this.seedAdmin();
   }
 
