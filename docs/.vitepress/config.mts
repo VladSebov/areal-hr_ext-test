@@ -31,7 +31,15 @@ export default defineConfig({
           text: 'Для разработчиков',
           items: [
             { text: 'Общие сведения', link: '/api/' },
-            { text: 'Сотрудники', link: '/api/employees' }
+            { text: 'Сотрудники (Employees)', link: '/api/employees' },
+            { text: 'Департаменты (Departments)', link: '/api/departments' },
+            { text: 'Файлы (Files)', link: '/api/files' },
+            { text: 'Организации (Organizations)', link: '/api/organizations' },
+            { text: 'Кадровые операции (HR Operations)', link: '/api/hr-operations' },
+            { text: 'История операций (Operations History)', link: '/api/operations-history' },
+            { text: 'Скан-копии паспортов (Passport Scans)', link: '/api/passport-scans' },
+            { text: 'Должности (Positions)', link: '/api/positions' },
+            { text: 'Пользователи (Users)', link: '/api/users' }
           ]
         }
       ]
