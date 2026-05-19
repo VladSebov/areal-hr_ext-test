@@ -24,6 +24,7 @@ import {User} from "./users/models/user.model";
 import {HrOperation} from "./hr_operations/models/hr_operation.model";
 import { AuthModule } from './auth/auth.module';
 import {Session} from "./auth/models/session.model";
+import {ServeStaticModule} from "@nestjs/serve-static";
 
 @Module({
   imports: [
@@ -34,6 +35,11 @@ import {Session} from "./auth/models/session.model";
         allowUnknown: true,
         abortEarly: true,
       },
+    }),
+
+    ServeStaticModule.forRoot({
+      rootPath: '/docs/.vitepress/dist',
+      serveRoot: '/docs',
     }),
 
     TypeOrmModule.forRootAsync({
