@@ -3,18 +3,21 @@ services:
     container_name: vue_app_container
     build:
       context: .
-      dockerfile: containers/app/Dockerfile
+      dockerfile: containers/app/Dockerfile.dev
     ports:
-      - "${VUE_APP_PORT}:80"
-    restart: always
+      - "${VUE_APP_PORT}:${VUE_APP_PORT}"
+    environment:
+      - "PORT=${VUE_APP_PORT}"
+    volumes:
+      - ./app:/app
+      - /app/node_modules
     depends_on:
       - nest_api
-
   nest_api:
     container_name: nest_api_container
     build:
       context: .
-      dockerfile: containers/api/Dockerfile
+      dockerfile: containers/api/Dockerfile.dev
     environment:
       - "PORT=${NEST_API_PORT}"
       - "NODE_ENV=${NODE_ENV}"
@@ -22,11 +25,13 @@ services:
       - "${NEST_API_PORT}:${NEST_API_PORT}"
     env_file:
       - .env
-    restart: always
     depends_on:
       - postgres
       - minio
-
+    volumes:
+      - ./docs:/docs
+      - ./api:/app
+      - /app/node_modules
   postgres:
     image: postgres:16-alpine
     container_name: postgres_db
@@ -34,10 +39,10 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: always
-
   minio:
     image: elestio/minio
     container_name: minio_storage
@@ -50,8 +55,7 @@ services:
     volumes:
       - miniodata:/data
     command: server /data --console-address ":9001"
-    restart: always
-
+    restart: unless-stopped
 volumes:
   pgdata:
   miniodata:

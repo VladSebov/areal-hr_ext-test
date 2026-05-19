@@ -16,6 +16,5 @@ FROM nginx:stable-alpine AS production-stage
 
 COPY --from=build-stage /app/dist/spa /usr/share/nginx/html
 
-ENV PORT=80
-EXPOSE ${PORT}
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
