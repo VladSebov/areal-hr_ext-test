@@ -1,15 +1,19 @@
-# build stage
-FROM node:22-alpine as build-stage
+# Build Stage
+FROM node:22-alpine AS build-stage
 WORKDIR /app
+
+RUN npm install -g @quasar/cli
+COPY app/package*.json ./
+RUN npm ci
+
 COPY app/ .
-RUN npm install
-RUN npm run build
+RUN quasar build -m spa
 
-# production stage
-FROM nginx:stable-alpine as production-stage
+# Production Stage
+FROM nginx:stable-alpine AS production-stage
+
 COPY --from=build-stage /app/dist/spa /usr/share/nginx/html
-ENV PORT=80
 
+ENV PORT=80
 EXPOSE ${PORT}
 CMD ["nginx", "-g", "daemon off;"]
-

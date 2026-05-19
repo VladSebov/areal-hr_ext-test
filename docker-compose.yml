@@ -3,7 +3,7 @@ services:
     container_name: vue_app_container
     build:
       context: .
-      dockerfile: containers/app/Dockerfile.dev
+      dockerfile: containers/app/Dockerfile
     ports:
       - "${VUE_APP_PORT}:${VUE_APP_PORT}"
     environment:
@@ -17,7 +17,7 @@ services:
     container_name: nest_api_container
     build:
       context: .
-      dockerfile: containers/api/Dockerfile.dev
+      dockerfile: containers/api/Dockerfile
     environment:
       - "PORT=${NEST_API_PORT}"
       - "NODE_ENV=${NODE_ENV}"
