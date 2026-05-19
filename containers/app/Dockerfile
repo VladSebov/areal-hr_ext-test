@@ -1,12 +1,14 @@
+
 # Build Stage
 FROM node:22-alpine AS build-stage
 WORKDIR /app
 
 RUN npm install -g @quasar/cli
 COPY app/package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY app/ .
+RUN quasar prepare
 RUN quasar build -m spa
 
 # Production Stage
