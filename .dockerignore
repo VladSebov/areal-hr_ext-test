@@ -4,5 +4,4 @@ app/node_modules
 api/node_modules
 .git
 docks/node_modules
-docs/.vitepress/dist
 docs/.vitepress/cache

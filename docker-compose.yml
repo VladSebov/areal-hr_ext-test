@@ -29,6 +29,7 @@ services:
       - postgres
       - minio
     volumes:
+      - ./docs:/docs
       - ./api:/app
       - /app/node_modules
   postgres:

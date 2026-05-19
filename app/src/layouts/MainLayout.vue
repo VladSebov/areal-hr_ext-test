@@ -11,6 +11,16 @@
             {{ authStore.user.firstName }} {{ authStore.user.lastName }}
           </div>
 
+          <q-btn
+            flat
+            round
+            dense
+            icon="help_outline"
+            @click="openDocs"
+          >
+            <q-tooltip>Документация и API</q-tooltip>
+          </q-btn>
+
           <q-btn round flat>
             <q-avatar size="32px">
               <q-icon name="account_circle" size="32px" />
@@ -81,6 +91,14 @@ const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
+}
+
+function openDocs() {
+  const backendUrl = window.location.port === '8080'
+    ? `${window.location.protocol}//${window.location.hostname}:3000`
+    : window.location.origin;
+
+  window.open(`${backendUrl}/docs/`, '_blank');
 }
 
 async function handleLogout() {
